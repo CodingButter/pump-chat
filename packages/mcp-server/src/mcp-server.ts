@@ -13,7 +13,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { PumpChatClient } from 'pump-chat-client';
+import { PumpChatClient } from '@pump-chat/client';
 
 /**
  * Arguments for the ReadMessages tool.
