@@ -8,9 +8,11 @@ A mono-repo for Pump.fun chat functionality, containing:
 ## Packages
 
 ### Client (`packages/client`)
+
 WebSocket client that connects to Pump.fun for real-time chat interactions.
 
 ### MCP Server (`packages/mcp-server`)
+
 MCP server that provides LLM-friendly interface for interacting with Pump.fun chat.
 
 ## Development

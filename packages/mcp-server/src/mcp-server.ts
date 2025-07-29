@@ -13,7 +13,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { PumpChatClient } from '@pump-chat/client';
+import { PumpChatClient, IMessage } from '@pump-chat/client';
 
 /**
  * Arguments for the ReadMessages tool.
@@ -62,7 +62,7 @@ class PumpFunChatServer {
    * This allows the MCP server to access messages even if the client
    * wasn't actively listening when they arrived.
    */
-  private messageBuffer: any[] = [];
+  private messageBuffer: IMessage[] = [];
 
   /**
    * Creates a new PumpFunChatServer instance.
@@ -123,7 +123,7 @@ class PumpFunChatServer {
      * Handle new incoming messages.
      * These are real-time messages posted by users in the chat.
      */
-    this.client.on('message', (message: any) => {
+    this.client.on('message', (message: IMessage) => {
       // Add to our local buffer
       this.messageBuffer.push(message);
 
@@ -140,7 +140,7 @@ class PumpFunChatServer {
      * Handle message history received from server.
      * This typically happens right after joining the room.
      */
-    this.client.on('messageHistory', (messages: any) => {
+    this.client.on('messageHistory', () => {
       // Historical messages received - silent
     });
 
@@ -148,7 +148,7 @@ class PumpFunChatServer {
      * Handle connection errors.
      * These could be network issues, protocol errors, etc.
      */
-    this.client.on('error', (error: any) => {
+    this.client.on('error', (error: Error) => {
       console.error(`Chat error:`, error);
     });
 
@@ -156,7 +156,7 @@ class PumpFunChatServer {
      * Handle server-side errors.
      * These are typically application-level errors like authentication failures.
      */
-    this.client.on('serverError', (error: any) => {
+    this.client.on('serverError', (error: { error: string }) => {
       console.error(`Server error:`, error);
 
       // Provide helpful information for authentication errors
@@ -244,7 +244,7 @@ class PumpFunChatServer {
      * Handle CallTool requests.
      * This routes tool calls to the appropriate handler methods.
      */
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
+    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       // Route based on tool name
       switch (request.params.name) {
         case 'read_messages':
@@ -305,7 +305,7 @@ class PumpFunChatServer {
     // Convert each message to a readable format with timestamp, username, and content
     const formattedMessages = messages
       .map(
-        (msg: any) =>
+        (msg: IMessage) =>
           `[${new Date(msg.timestamp).toLocaleTimeString()}] ${msg.username}: ${msg.message}`
       )
       .join('\n');

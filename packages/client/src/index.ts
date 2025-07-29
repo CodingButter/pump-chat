@@ -8,7 +8,11 @@
  * @license MIT
  */
 
-import WebSocket from 'websocket';
+import {
+  client as WebSocketClient,
+  connection as WebSocketConnection,
+  Message as WebSocketMessage,
+} from 'websocket';
 import { EventEmitter } from 'events';
 
 /**
@@ -84,10 +88,10 @@ interface PumpChatClientOptions {
  */
 export class PumpChatClient extends EventEmitter {
   /** WebSocket client instance from the 'websocket' library */
-  private client: WebSocket.client;
+  private client: WebSocketClient;
 
   /** Active WebSocket connection, null when disconnected */
-  private connection: WebSocket.connection | null = null;
+  private connection: WebSocketConnection | null = null;
 
   /** The token address/room ID we're connected to */
   private roomId: string;
@@ -142,7 +146,7 @@ export class PumpChatClient extends EventEmitter {
     this.messageHistoryLimit = options.messageHistoryLimit || 100;
 
     // Initialize WebSocket client
-    this.client = new WebSocket.client();
+    this.client = new WebSocketClient();
 
     // Set up WebSocket event handlers
     this.setupClientHandlers();
@@ -158,7 +162,7 @@ export class PumpChatClient extends EventEmitter {
      * Handle successful WebSocket connection.
      * This is called when the WebSocket upgrade is successful.
      */
-    this.client.on('connect', (connection: WebSocket.connection) => {
+    this.client.on('connect', (connection: WebSocketConnection) => {
       // Store the connection reference
       this.connection = connection;
       this.isConnected = true;
@@ -182,7 +186,7 @@ export class PumpChatClient extends EventEmitter {
      * Handle connection failures.
      * This is called when the WebSocket connection cannot be established.
      */
-    this.client.on('connectFailed', (error) => {
+    this.client.on('connectFailed', (error: Error) => {
       console.error('Connection Failed:', error.toString());
 
       // Emit error event for consumers
@@ -199,12 +203,12 @@ export class PumpChatClient extends EventEmitter {
    * @param {WebSocket.connection} connection - The active WebSocket connection
    * @private
    */
-  private setupConnectionHandlers(connection: WebSocket.connection) {
+  private setupConnectionHandlers(connection: WebSocketConnection) {
     /**
      * Handle connection errors during active connection.
      * These are different from connection establishment errors.
      */
-    connection.on('error', (error) => {
+    connection.on('error', (error: Error) => {
       console.error('Connection Error:', error.toString());
       this.emit('error', error);
     });
@@ -234,7 +238,7 @@ export class PumpChatClient extends EventEmitter {
      * Handle incoming WebSocket messages.
      * All messages from pump.fun come through this handler.
      */
-    connection.on('message', (message: WebSocket.Message) => {
+    connection.on('message', (message: WebSocketMessage) => {
       // pump.fun sends UTF-8 encoded text messages
       if (message.type === 'utf8' && message.utf8Data) {
         this.handleMessage(message.utf8Data);
@@ -268,7 +272,7 @@ export class PumpChatClient extends EventEmitter {
         break;
 
       case '40': // Connected acknowledgment - Handshake accepted
-        this.handleConnectedAck(data);
+        this.handleConnectedAck();
         break;
 
       case '41': // Disconnect message - Server initiated disconnect
@@ -338,7 +342,7 @@ export class PumpChatClient extends EventEmitter {
    * @param {string} data - Raw message data starting with "40"
    * @private
    */
-  private handleConnectedAck(_data: string) {
+  private handleConnectedAck() {
     // Get the next acknowledgment ID (0-9)
     const joinAckId = this.getNextAckId();
 
@@ -375,7 +379,7 @@ export class PumpChatClient extends EventEmitter {
           reason = parsed.reason;
         }
       }
-    } catch (error) {
+    } catch {
       // If parsing fails, use default reason
     }
 
