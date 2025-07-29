@@ -40,7 +40,6 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@rusty-butter/tsconfig": "workspace:^",
     "@types/node": "^24.1.0",
     "@types/websocket": "^1.0.10",
     "nodemon": "^3.1.10",
@@ -49,7 +48,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.1",
-    "@pump-chat/client": "workspace:*",
+    "@pump-chat/client": "file:../client",
     "websocket": "^1.0.35"
   }
 }

@@ -32,7 +32,6 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@rusty-butter/tsconfig": "workspace:^",
     "@types/node": "^24.1.0",
     "@types/websocket": "^1.0.10",
     "typescript": "^5.8.3"
